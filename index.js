@@ -65,6 +65,9 @@ client.on("message", async message => {
         case "repeat":
           return message.reply(`Why did you say: ${text}?`);
 
+        case "players":
+          return channel.send("Starting Poker Tournament");
+
         case "poker":
         case "pokre":
           voiceChannel = await channel.join();
