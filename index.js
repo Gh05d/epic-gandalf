@@ -8,6 +8,7 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 
 const { doppelkinnDommez } = require("./doppelkinnDommez");
+
 if (process.env.ENVIRONMENT == "production") {
   http
     .createServer((req, res) => {
