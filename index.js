@@ -3,10 +3,19 @@ dotenv.config();
 
 const path = require("path");
 const fs = require("fs");
+const http = require("http");
 const Discord = require("discord.js");
 const client = new Discord.Client();
 
 const { doppelkinnDommez } = require("./doppelkinnDommez");
+if (process.env.ENVIRONMENT == "production") {
+  http
+    .createServer((req, res) => {
+      res.writeHead(200, { "Content-type": "text/plain" });
+      res.end();
+    })
+    .listen(4000);
+}
 
 const PREFIX = "$";
 const GANDALF_VIDEO = "https://i.imgur.com/DOVqVvh.mp4";

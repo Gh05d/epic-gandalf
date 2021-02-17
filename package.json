@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon index.js",
+    "start": "ENVIRONMENT=production node index.js",
+    "dev": "ENVIRONMENT=true nodemon index.js",
     "deploy": "git push heroku main"
   },
   "keywords": [
