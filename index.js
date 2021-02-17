@@ -3,6 +3,7 @@ dotenv.config();
 
 const path = require("path");
 const fs = require("fs");
+const axios = require("axios");
 const Discord = require("discord.js");
 const client = new Discord.Client();
 
@@ -65,8 +66,37 @@ client.on("message", async message => {
         case "repeat":
           return message.reply(`Why did you say: ${text}?`);
 
+        case "trump":
+        case "tronald":
+        case "the_donald":
+        case "the-donald":
+          const config = { headers: { Accept: "application/hal+json" } };
+          const res = await axios.get(
+            "https://api.tronalddump.io/random/quote",
+            config
+          );
+
+          if (res && res.status === 200) {
+            return await message.channel.send({
+              embed: {
+                color: "#FAD799",
+                author: {
+                  name: "Tronald Dump",
+                  icon_url:
+                    "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.explicit.bing.net%2Fth%3Fid%3DOIP.2vvU7DIp0gqvypWO2u3arwHaEK%26pid%3DApi&f=1",
+                },
+                description: res.data.value,
+                footer: {
+                  text: `Proudly stated on ${res.data.appeared_at}`,
+                },
+              },
+            });
+          } else {
+            return message.reply(`sorry, couldn't get a reply from Tronald 😔`);
+          }
+
         case "players":
-          return channel.send("Starting Poker Tournament");
+          return message.channel.send("Starting Poker Tournament");
 
         case "poker":
         case "pokre":
