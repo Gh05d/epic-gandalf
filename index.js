@@ -8,6 +8,7 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 
 const { doppelkinnDommez } = require("./doppelkinnDommez");
+const { Player, Tournament, PlayerTournament, TournamentView } = require("./sequelizeSetup");
 
 const PREFIX = "$";
 const GANDALF_VIDEO = "https://i.imgur.com/DOVqVvh.mp4";
@@ -19,7 +20,7 @@ const POKER_CHANNEL_ID = "777166327466950656";
 
 let voiceChannel = null;
 
-client.once("ready", () => console.log(`Riding on a 🦄 into the 🌇`));
+client.once("ready", async () => console.log(`Riding on a 🦄 into the 🌇`));
 
 client.login(process.env.GANDALFS_TOKEN);
 
@@ -30,10 +31,7 @@ client.on("message", async message => {
 
   try {
     if (message.content.trim().startsWith(PREFIX)) {
-      const [command, ...text] = message.content
-        .trim()
-        .substring(PREFIX.length)
-        .split(/\s+/g);
+      const [command, ...text] = message.content.trim().substring(PREFIX.length).split(/\s+/g);
 
       const channel = await client.channels.cache.get(POKER_CHANNEL_ID);
 
@@ -71,10 +69,7 @@ client.on("message", async message => {
         case "the_donald":
         case "the-donald":
           const config = { headers: { Accept: "application/hal+json" } };
-          const res = await axios.get(
-            "https://api.tronalddump.io/random/quote",
-            config
-          );
+          const res = await axios.get("https://api.tronalddump.io/random/quote", config);
 
           if (res && res.status === 200) {
             return await message.channel.send({
@@ -95,13 +90,25 @@ client.on("message", async message => {
             return message.reply(`sorry, couldn't get a reply from Tronald 😔`);
           }
 
-        case "players":
-          return message.channel.send("Starting Poker Tournament");
+        case "statistics":
+          const tournament = await TournamentView.findOne({
+            where: { status: "running", raw: true },
+          });
+          console.log("\x1b[1m%s\x1b[0m", "LOG tournament", tournament);
+          return await message.channel.send({
+            embed: {
+              title: "Statistics for the current game",
+              description: res.data.value,
+              footer: {
+                text: `Proudly stated on ${res.data.appeared_at}`,
+              },
+            },
+          });
 
         case "poker":
         case "pokre":
-          voiceChannel = await channel.join();
-          return;
+        case "pogre":
+          return message.channel.send("Starting Poker Tournament");
 
         case "end":
           if (voiceChannel) {
@@ -133,10 +140,15 @@ client.on("message", async message => {
                 },
               })
           );
-          dispatcher.on("finish", () =>
-            message.channel.send("Stopped rocking 😔")
-          );
-          dispatcher.on("on", console.error);
+
+          dispatcher.on("finish", () => message.channel.send("Stopped rocking 😔"));
+
+          dispatcher.on("on", error => {
+            console.error(error);
+            message.reply(
+              `sorry, couldn't start to rock 💩 There was this problem: ${error.message}`
+            );
+          });
 
           return;
 
