@@ -13,6 +13,6 @@
     "linebreak-style": ["error", "unix"],
     "quotes": ["error", "double"],
     "semi": ["error", "always"],
-    "no-unreachable": ["error"]
+    "no-unreachable": "off"
   }
 }
