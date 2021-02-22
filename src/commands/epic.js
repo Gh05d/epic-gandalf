@@ -26,11 +26,14 @@ module.exports = {
         })
     );
 
-    dispatcher.on("finish", () => message.channel.send("Stopped being epic 😔"));
+    dispatcher.on("finish", () => {
+      message.channel.send("Stopped being epic 😔");
+      joinedChannel.leave();
+    });
 
     dispatcher.on("on", error => {
       console.error(error);
-      message.reply(`sorry, couldn't start to rock 💩 There was this problem: ${error.message}`);
+      message.reply(`sorry, couldn't start being epic 💩 There was this problem: ${error.message}`);
     });
 
     return;
