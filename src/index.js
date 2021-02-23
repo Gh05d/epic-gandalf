@@ -20,10 +20,14 @@ for (const file of commandFiles) {
 const PREFIX = "$";
 
 client.once("ready", async () => {
-  const players = await Player.findAll({ raw: true });
-  console.log("FIRE ~ file: index.js ~ line 24 ~ client.once ~ players", players);
-  client.players = players;
-  console.log(`Riding on a 🦄 into the 🌇`);
+  try {
+    const players = await Player.findAll({ raw: true });
+    client.players = players;
+
+    console.log(`Riding on a 🦄 into the 🌇`);
+  } catch (error) {
+    console.error(error);
+  }
 });
 
 client.login(process.env.GANDALFS_TOKEN);
