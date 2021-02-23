@@ -16,6 +16,7 @@ if (DATABASE_URL == "localhost") {
     dialect: "postgres",
     dialectOptions: { ssl: true, rejectUnauthorized: false },
     protocol: "postgres",
+    port: "5432",
     logging: false,
     define: { createdAt: false, updatedAt: false, freezeTableName: true, underscored: true },
   });
