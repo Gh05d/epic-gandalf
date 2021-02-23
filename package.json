@@ -1,6 +1,6 @@
 {
   "name": "discord-gandalf",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A helpful friendly bot which can do cool stuff",
   "main": "index.js",
   "scripts": {
