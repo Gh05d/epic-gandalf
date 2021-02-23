@@ -14,7 +14,7 @@ if (DATABASE_URL == "localhost") {
 } else {
   sequelize = new Sequelize(DATABASE_URL, {
     dialect: "postgres",
-    dialectOptions: { ssl: true, rejectUnauthorized: false },
+    dialectOptions: { ssl: { require: true, rejectUnauthorized: false } },
     protocol: "postgres",
     port: "5432",
     logging: false,
