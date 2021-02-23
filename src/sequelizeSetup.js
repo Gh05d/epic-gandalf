@@ -14,6 +14,7 @@ if (DATABASE_URL == "localhost") {
 } else {
   sequelize = new Sequelize(DATABASE_URL, {
     dialect: "postgres",
+    host: process.env.HEROKU_DATABASE_NAME,
     protocol: "postgres",
     logging: false,
     define: { createdAt: false, updatedAt: false, freezeTableName: true, underscored: true },
