@@ -14,7 +14,8 @@
     "discordjs",
     "javascript",
     "bots",
-    "gandalf"
+    "gandalf",
+    "postgres"
   ],
   "author": "Gh05d",
   "license": "ISC",

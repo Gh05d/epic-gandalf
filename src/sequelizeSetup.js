@@ -3,7 +3,7 @@ const { STRING, INTEGER, DATE, BIGINT, ARRAY, ENUM, BOOLEAN } = Sequelize;
 const { DATABASE_PASSWORD, DATABASE_URL, DEBUG_DATABASE } = process.env;
 
 let sequelize;
-
+console.log("BEFORE Sequelize");
 if (DATABASE_URL == "localhost") {
   sequelize = new Sequelize("poker", "postgres", DATABASE_PASSWORD, {
     host: DATABASE_URL,
@@ -19,7 +19,7 @@ if (DATABASE_URL == "localhost") {
     define: { createdAt: false, updatedAt: false, freezeTableName: true, underscored: true },
   });
 }
-
+console.log(sequelize);
 const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 const Player = sequelize.define("player_data", {
