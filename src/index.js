@@ -10,7 +10,7 @@ const { client } = require("./constants.js");
 const commandFiles = Fs.readdirSync(Path.resolve(__dirname, "commands")).filter(file =>
   file.endsWith(".js")
 );
-console.log("\x1b[1m%s\x1b[0m", "LOG commandFiles", commandFiles);
+
 for (const file of commandFiles) {
   const command = require(Path.resolve(__dirname, "commands", file));
 
@@ -20,8 +20,8 @@ for (const file of commandFiles) {
 const PREFIX = "$";
 
 client.once("ready", async () => {
-  console.log("Querying players");
   const players = await Player.findAll({ raw: true });
+  console.log("FIRE ~ file: index.js ~ line 24 ~ client.once ~ players", players);
   client.players = players;
   console.log(`Riding on a 🦄 into the 🌇`);
 });
