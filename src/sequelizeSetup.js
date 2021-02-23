@@ -1,13 +1,24 @@
 const Sequelize = require("sequelize");
-const { STRING, INTEGER, DATE, BIGINT, ARRAY, ENUM } = Sequelize;
-const { DATABASE_PASSWORD, DATABASE_URL, ENVIRONMENT } = process.env;
+const { STRING, INTEGER, DATE, BIGINT, ARRAY, ENUM, BOOLEAN } = Sequelize;
+const { DATABASE_PASSWORD, DATABASE_URL, DEBUG_DATABASE } = process.env;
 
-const sequelize = new Sequelize("poker", "postgres", DATABASE_PASSWORD, {
-  host: DATABASE_URL,
-  dialect: "postgres",
-  logging: ENVIRONMENT == "development" ? console.info : false,
-  define: { createdAt: false, updatedAt: false, freezeTableName: true, underscored: true },
-});
+let sequelize;
+
+if (DATABASE_URL == "localhost") {
+  sequelize = new Sequelize("poker", "postgres", DATABASE_PASSWORD, {
+    host: DATABASE_URL,
+    dialect: "postgres",
+    logging: DEBUG_DATABASE && DEBUG_DATABASE.toLowerCase() != "false" ? console.info : false,
+    define: { createdAt: false, updatedAt: false, freezeTableName: true, underscored: true },
+  });
+} else {
+  sequelize = new Sequelize(DATABASE_URL, {
+    dialect: "postgres",
+    protocol: "postgres",
+    logging: false,
+    define: { createdAt: false, updatedAt: false, freezeTableName: true, underscored: true },
+  });
+}
 
 const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
@@ -24,6 +35,7 @@ const Player = sequelize.define("player_data", {
       }
     },
   },
+  admin: { type: BOOLEAN, defaultValue: false },
 });
 
 const Tournament = sequelize.define("tournament_data", {

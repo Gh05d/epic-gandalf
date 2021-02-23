@@ -1,20 +1,25 @@
 const Path = require("path");
 const Discord = require("discord.js");
-const { Player } = require("../constants");
+const { Player } = require("../sequelizeSetup");
+const { client } = require("../constants");
 
 module.exports = {
-  name: "new-player",
+  name: "add-player",
+  aliases: ["new-player", "add"],
+  admin: true,
   async execute(message, playerData) {
     if (playerData.length < 3) {
       return message.reply(
-        "please set all data. The command should look like this: $new-player [id] [name] [email]"
+        "please set all data. The command should look like this: $add-player [id] [name] [email]"
       );
     }
 
     try {
       const [id, name, email] = playerData;
 
-      // await Player.create({ id, name, email });
+      const newPlayer = await Player.create({ id, name, email });
+      client.players.push(newPlayer.dataValues);
+
       const attachment = new Discord.MessageAttachment(
         Path.resolve(__dirname, "../../", "assets", "welcome.jpeg"),
         "welcome.jpeg"

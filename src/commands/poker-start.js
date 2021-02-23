@@ -2,8 +2,8 @@ const { getPlayerID } = require("../helpers");
 const { Tournament, PlayerTournament, sequelize } = require("../sequelizeSetup");
 
 module.exports = {
-  name: "poker",
-  aliases: ["pokre", "pogre", "poker-start", "pokre-start"],
+  name: "poker-start",
+  aliases: ["pokre", "pogre", "poker", "pokre-start", "poker-new"],
   execute: async (message, players) => {
     if (players.length < 2) {
       return message.reply("please add at least two players to the command");
@@ -14,7 +14,7 @@ module.exports = {
     if (!alreadyStarted) {
       await sequelize.transaction(async ta => {
         try {
-          const tournament = await Tournament.create({});
+          const tournament = await Tournament.create({}, { transaction: ta });
 
           return await Promise.all(
             players.map(player => {

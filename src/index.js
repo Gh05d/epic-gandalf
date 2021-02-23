@@ -4,8 +4,8 @@ dotenv.config();
 const Fs = require("fs");
 const Path = require("path");
 
-const { Player, Tournament, PlayerTournament, TournamentView } = require("./sequelizeSetup");
-const { client, players } = require("./constants.js");
+const { Player } = require("./sequelizeSetup");
+const { client } = require("./constants.js");
 
 const commandFiles = Fs.readdirSync(Path.resolve(__dirname, "commands")).filter(file =>
   file.endsWith(".js")
@@ -20,18 +20,8 @@ for (const file of commandFiles) {
 const PREFIX = "$";
 
 client.once("ready", async () => {
-  await Promise.all(
-    Object.keys(players).map(playerName =>
-      Player.findOrCreate({
-        where: { id: players[playerName] },
-        defaults: {
-          id: players[playerName],
-          name: playerName,
-          email: `notsetyet@${playerName}.com`,
-        },
-      })
-    )
-  );
+  const players = await Player.findAll({ raw: true });
+  client.players = players;
   console.log(`Riding on a 🦄 into the 🌇`);
 });
 
@@ -54,6 +44,12 @@ client.on("message", async message => {
       if (!command) {
         return message.reply(`whaaaaaaaaazz up`);
       } else {
+        const { admin } = client.players.find(player => player.id == message.author.id);
+
+        if (command.admin && !admin) {
+          throw new Error("you have to be an admin to do this!");
+        }
+
         return await command.execute(message, args);
       }
     }

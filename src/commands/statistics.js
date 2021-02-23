@@ -1,22 +1,37 @@
+const { computeMoneyDistribution } = require("../helpers");
 const { TournamentView } = require("../sequelizeSetup");
 
 module.exports = {
-  name: "statistics",
+  name: "info",
+  aliases: ["game-info", "game-statistics"],
   async execute(message) {
-    const tournament = await TournamentView.findOne({
-      where: { status: "running", raw: true },
-    });
+    try {
+      const tournament = await TournamentView.findOne({
+        where: { status: "running" },
+        raw: true,
+      });
 
-    console.log("\x1b[1m%s\x1b[0m", "LOG tournament", tournament);
+      const moneyDistribution = computeMoneyDistribution(tournament);
 
-    return await message.channel.send({
-      embed: {
-        title: "Statistics for the current game",
-        description: res.data.value,
-        footer: {
-          text: `Proudly stated on ${res.data.appeared_at}`,
+      return await message.channel.send({
+        embed: {
+          color: "#FFD700",
+          title: "Statistics for the current game",
+          fields: [
+            { name: "Players", value: tournament.players.join(", ") },
+            { name: "Buy-ins", value: tournament.amount_players },
+            { name: "Rebuys", value: tournament.rebuys },
+            { name: "Pricepool", value: `${tournament.price_pool} €` },
+            {
+              name: "Money Distribution",
+              value: tournament.buy_ins > 6 ? "60 / 20 / 10" : "70 / 30",
+            },
+            ...moneyDistribution,
+          ],
         },
-      },
-    });
+      });
+    } catch (error) {
+      throw new Error(error);
+    }
   },
 };

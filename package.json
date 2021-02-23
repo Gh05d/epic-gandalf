@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ENVIRONMENT=production node src/index.js",
     "dev": "ENVIRONMENT=development nodemon src/index.js",
+    "debug": "ENVIRONMENT=development DEBUG_DATABASE=true nodemon src/index.js",
     "deploy": "git push heroku main"
   },
   "keywords": [
