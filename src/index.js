@@ -29,7 +29,7 @@ client.once("ready", async () => {
     console.error(error);
   }
 });
-
+console.log(client.commands);
 client.login(process.env.GANDALFS_TOKEN);
 
 client.on("message", async message => {
