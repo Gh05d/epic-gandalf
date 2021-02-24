@@ -1,9 +1,14 @@
-const { Tournament, sequelize, PlayerTournament, TournamentView } = require("../sequelizeSetup");
-const { getPlayerID } = require("../helpers");
+const {
+  Tournament,
+  sequelize,
+  PlayerTournament,
+  TournamentView,
+} = require("../sequelizeSetup");
+const { getPlayer } = require("../helpers");
 
 module.exports = {
   name: "poker-finish",
-  aliases: ["poker-end", "poker-stop", "finish"],
+  aliases: ["poker-end", "poker-stop", "finish", "tournament-finish"],
   description: "Stops a running poker tournament",
   admin: true,
   execute: async (message, rankings) => {
@@ -13,7 +18,10 @@ module.exports = {
     if (rankings.length == 0) {
       return message.reply(misuseReply);
     }
-    const tournament = await TournamentView.findOne({ where: { status: "running" }, raw: true });
+    const tournament = await TournamentView.findOne({
+      where: { status: "running" },
+      raw: true,
+    });
 
     if (!tournament) {
       return message.reply("sorry, there seems to be no tournament running");
@@ -26,11 +34,14 @@ module.exports = {
     await sequelize.transaction(async ta => {
       try {
         const rankingPromises = rankings.map((player, i) => {
-          const player_id = getPlayerID(player);
+          const { id: player_id } = getPlayer(player);
 
-          PlayerTournament.update(
-            { position: i + 1 },
-            { where: { tournament_id: tournament.id, player_id }, transaction: ta }
+          PlayerTournament.increment(
+            { position: 1 },
+            {
+              where: { tournament_id: tournament.id, player_id },
+              transaction: ta,
+            }
           );
         });
 
@@ -51,10 +62,13 @@ module.exports = {
     return message.channel.send({
       embed: {
         title: "Tournament finished",
-        description: `The tournament id over. Congrats to the winner ${winner} 🥇 and the second place ${second}🥈. ${losers.join(
+        description: `The tournament id over. Congrats to the winner ${winner} 🥇 and the second place ${second}🥈\n${losers.join(
           ", "
         )}, IHR SEID SCHEISSE! 💩`,
-        fields: rankings.map((player, i) => ({ name: `${i + 1}. Platz`, value: player })),
+        fields: rankings.map((player, i) => ({
+          name: `${i + 1}. Platz`,
+          value: player,
+        })),
       },
     });
   },

@@ -1,31 +1,47 @@
-const { Player, PlayerTournament } = require("../sequelizeSetup");
+const { Player, PlayerTournament, sequelize } = require("../sequelizeSetup");
 const { client } = require("../constants");
-const { getPlayerID } = require("../helpers");
+const { getPlayer } = require("../helpers");
 
 module.exports = {
   name: "remove-player",
   aliases: ["delete-player", "delete"],
   admin: true,
-  async execute(message, playerName) {
-    if (playerName.length < 1) {
+  async execute(message, [playerName]) {
+    if (!playerName) {
       return message.reply(
         "please set all data. The command should look like this: $remove-player [id] [name] [email]"
       );
     }
 
-    const playerID = getPlayerID(playerName[0]);
+    const player = getPlayer(playerName);
 
     try {
-      await PlayerTournament.destroy({ where: { id: playerID } });
-      const removed = await Player.destroy({ where: { id: playerID } });
+      await sequelize.transaction(async ta => {
+        try {
+          await PlayerTournament.destroy({
+            where: { player_id: player.id },
+            transaction: ta,
+          });
 
-      if (removed != 1) {
-        throw new Error("couldn't remove player");
-      }
-      client.players = client.players.filter(player => player.id != playerID);
+          const removed = await Player.destroy({
+            where: { id: player.id },
+            transaction: ta,
+          });
+
+          if (removed != 1) {
+            throw new Error("couldn't remove player");
+          }
+          client.players = client.players.filter((_v, key) => key != player.id);
+        } catch (error) {
+          throw new Error(error);
+        }
+      });
 
       return await message.channel.send({
-        embed: { title: "Player removed", description: `Removed player ${playerName}` },
+        embed: {
+          title: "Player removed",
+          description: `Removed player ${playerName}`,
+        },
       });
     } catch (error) {
       console.log("\x1b[1m%s\x1b[0m", "LOG error", error);

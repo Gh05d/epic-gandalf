@@ -6,29 +6,25 @@ const {
 } = require("../sequelizeSetup");
 
 module.exports = {
-  name: "poker-start",
-  aliases: [
-    "pokre",
-    "pogre",
-    "poker",
-    "pokre-start",
-    "poker-new",
-    "new-tournament",
-    "create-tournament",
-  ],
+  name: "buyin",
+  aliases: ["buy-in"],
   admin: true,
-  description: "Starts a new tournament",
+  description: "Lets a player buyin to a running tournament",
   execute: async (message, players) => {
-    const alreadyStarted = await Tournament.findOne({
+    if (players.length < 1) {
+      return message.reply(
+        "please add at least one player to the command like this $buyin [player]"
+      );
+    }
+
+    const tournament = await Tournament.findOne({
       where: { status: "running" },
       raw: true,
     });
 
-    if (!alreadyStarted) {
+    if (tournament) {
       await sequelize.transaction(async ta => {
         try {
-          const tournament = await Tournament.create({}, { transaction: ta });
-
           return await Promise.all(
             players.map(player => {
               const { id } = getPlayer(player);
@@ -45,11 +41,11 @@ module.exports = {
       });
 
       return message.channel.send(
-        `Starting Poker Tournament. Good luck to ${players.join(", ")} 💪`
+        `New buyin. Good luck to ${players.join(", ")} 💪`
       );
     } else {
       return message.reply(
-        "sorry, there is already a tournament running. Finish it via $poker-finish [winner] [second] or $poker-abort."
+        "sorry, there is no tournament running. Create one via $poker-start"
       );
     }
   },

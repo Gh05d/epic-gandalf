@@ -18,7 +18,7 @@ module.exports = {
       const [id, name, email] = playerData;
 
       const newPlayer = await Player.create({ id, name, email });
-      client.players.push(newPlayer.dataValues);
+      client.players.set(id, newPlayer.dataValues);
 
       const attachment = new Discord.MessageAttachment(
         Path.resolve(__dirname, "../../", "assets", "welcome.jpeg"),

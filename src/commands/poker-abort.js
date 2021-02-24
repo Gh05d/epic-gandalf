@@ -2,7 +2,7 @@ const { Tournament } = require("../sequelizeSetup");
 
 module.exports = {
   name: "poker-abort",
-  aliases: ["abort", "abort-tournament"],
+  aliases: ["abort", "abort-tournament", "tournament-abort"],
   description: "Aborts a running poker tournament",
   admin: true,
   execute: async message => {
@@ -11,7 +11,6 @@ module.exports = {
         { status: "aborted" },
         { where: { status: "running" } }
       );
-      console.log("FIRE ~ file: poker-abort.js ~ line 14 ~ aborted", aborted);
 
       if (!aborted) {
         return message.reply("sorry, there seems to be no tournament running");

@@ -1,20 +1,21 @@
 const Path = require("path");
 const Discord = require("discord.js");
 const { TournamentView, PlayerTournament } = require("../sequelizeSetup");
-const { getPlayerID, playSound } = require("../helpers");
+const { getPlayer, playSound } = require("../helpers");
 const { GANDALF_AUDIO } = require("../constants");
 
 module.exports = {
   name: "rebuy",
   admin: true,
   description: "Adds a rebuy to the tournament",
-  async execute(message, players) {
+  async execute(message, [player]) {
     try {
-      if (players.length != 1) {
-        return message.reply("you need to specify at least one player. Example: $rebuy [player]");
+      if (!player) {
+        return message.reply(
+          "you need to specify a player. Example: $rebuy [player]"
+        );
       }
 
-      const [player] = players;
       const tournament = await TournamentView.findOne({
         where: { status: "running" },
         raw: true,
@@ -24,18 +25,21 @@ module.exports = {
         return message.reply("sorry, couldn't find an active tournament");
       }
 
-      const id = getPlayerID(player);
+      const { id } = getPlayer(player);
 
-      await PlayerTournament.increment(
+      const [[, inTournament]] = await PlayerTournament.increment(
         { rebuys: 1 },
         { where: { player_id: id, tournament_id: tournament.id } }
       );
+
+      if (!inTournament) {
+        return message.reply(`${player} is not in the tournament!`);
+      }
 
       const attachment = new Discord.MessageAttachment(
         Path.resolve(__dirname, "../../", "assets", "smile.png"),
         "smile.png"
       );
-
       const start = {
         embed: {
           title: "Re re re re re reeeeeeeeeeebuy",

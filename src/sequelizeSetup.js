@@ -4,12 +4,22 @@ const { DATABASE_PASSWORD, DATABASE_URL, DEBUG_DATABASE } = process.env;
 
 let sequelize;
 
+const define = {
+  createdAt: false,
+  updatedAt: false,
+  freezeTableName: true,
+  underscored: true,
+};
+
 if (DATABASE_URL == "localhost") {
   sequelize = new Sequelize("poker", "postgres", DATABASE_PASSWORD, {
     host: DATABASE_URL,
     dialect: "postgres",
-    logging: DEBUG_DATABASE && DEBUG_DATABASE.toLowerCase() != "false" ? console.info : false,
-    define: { createdAt: false, updatedAt: false, freezeTableName: true, underscored: true },
+    logging:
+      DEBUG_DATABASE && DEBUG_DATABASE.toLowerCase() != "false"
+        ? console.info
+        : false,
+    define,
   });
 } else {
   sequelize = new Sequelize(DATABASE_URL, {
@@ -18,7 +28,7 @@ if (DATABASE_URL == "localhost") {
     protocol: "postgres",
     port: "5432",
     logging: false,
-    define: { createdAt: false, updatedAt: false, freezeTableName: true, underscored: true },
+    define,
   });
 }
 
@@ -84,4 +94,10 @@ const TournamentView = sequelize.define("tournament_view", {
   second: STRING(50),
 });
 
-module.exports = { sequelize, Player, Tournament, PlayerTournament, TournamentView };
+module.exports = {
+  sequelize,
+  Player,
+  Tournament,
+  PlayerTournament,
+  TournamentView,
+};
