@@ -1,20 +1,23 @@
 const Fs = require("fs");
-const { POKER_CHANNEL_ID, client } = require("./constants");
+const { POKER_VOICE_CHANNEL, client } = require("./constants");
+const { PlayerTournament, sequelize } = require("./sequelizeSetup");
+
+function getPlayer(nickname) {
+  const player = client.players.find(
+    ({ name }) => name == nickname.toLowerCase()
+  );
+
+  if (!player) {
+    throw new Error(`Couldn't find a player named ${nickname}`);
+  }
+
+  return player;
+}
 
 module.exports = {
-  getPlayer: nickname => {
-    const player = client.players.find(
-      ({ name }) => name == nickname.toLowerCase()
-    );
-
-    if (!player) {
-      throw new Error(`Couldn't find a player named ${nickname}`);
-    }
-
-    return player;
-  },
+  getPlayer,
   playSound: async (sound, message, startMessage, endMessage) => {
-    const voiceChannel = await client.channels.cache.get(POKER_CHANNEL_ID);
+    const voiceChannel = await client.channels.cache.get(POKER_VOICE_CHANNEL);
     let joinedChannel = await voiceChannel.join();
 
     const dispatcher = joinedChannel.play(
@@ -64,5 +67,27 @@ module.exports = {
     }
 
     return results;
+  },
+  signupPlayers: async (tournament_id, players) => {
+    try {
+      await sequelize.transaction(async ta => {
+        try {
+          return await Promise.all(
+            players.map(player => {
+              const { id } = getPlayer(player);
+
+              return PlayerTournament.create(
+                { player_id: id, tournament_id },
+                { transaction: ta }
+              );
+            })
+          );
+        } catch (error) {
+          throw new Error(error);
+        }
+      });
+    } catch (error) {
+      throw new Error(error);
+    }
   },
 };

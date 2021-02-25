@@ -8,16 +8,20 @@ module.exports = {
   aliases: ["new-player", "add"],
   admin: true,
   async execute(message, playerData) {
-    if (playerData.length < 3) {
+    if (playerData.length < 4) {
       return message.reply(
-        "please set all data. The command should look like this: $add-player [id] [name] [email]"
+        "please set all data. The command should look like this: $add-player [id] [name] [paypal firstname] [paypal lastname]"
       );
     }
 
     try {
-      const [id, name, email] = playerData;
+      const [id, name, ...paypalName] = playerData;
 
-      const newPlayer = await Player.create({ id, name, email });
+      const newPlayer = await Player.create({
+        id,
+        name,
+        paypal_name: paypalName.join(" "),
+      });
       client.players.set(id, newPlayer.dataValues);
 
       const attachment = new Discord.MessageAttachment(

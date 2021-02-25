@@ -1,7 +1,8 @@
 const Fs = require("fs");
 const readline = require("readline");
 const { google } = require("googleapis");
-const { client } = require("./constants");
+const { client, POKER_TEXT_CHANNEL } = require("./constants");
+const { Tournament } = require("./sequelizeSetup");
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
@@ -10,8 +11,13 @@ const SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
 // time.
 const TOKEN_PATH = "token.json";
 
+let historyId = null;
+let channel = null;
+
 module.exports = {
   pollingStart: () => {
+    channel = client.channels.cache.get(POKER_TEXT_CHANNEL);
+    console.log("Started polling 👂");
     client.interval = setInterval(() => {
       // Load client secrets from a local file.
       Fs.readFile("credentials.json", (err, content) => {
@@ -24,7 +30,9 @@ module.exports = {
     }, 10000);
   },
   pollingEnd: () => {
+    historyId = null;
     clearInterval(client.interval);
+    console.log("Stopped polling 🛑");
   },
 };
 
@@ -84,6 +92,53 @@ function getNewToken(oAuth2Client, callback) {
 }
 
 /**
+ * Fetches unread messages and returns the most current historyId
+ *
+ * @param {object[]} list List of all new messages
+ * @param {google.auth.OAuth2} gmail A gmail client
+ *
+ * @returns {string} historyId
+ */
+async function fetchMessages(list, gmail) {
+  try {
+    const promises = list.map(message =>
+      gmail.users.messages.get({ userId: "me", id: message.id })
+    );
+
+    const messages = await Promise.all(promises);
+    const paypalNames = client.players.map(({ name, paypal_name }) => ({
+      paypal: paypal_name,
+      name,
+    }));
+
+    if (messages && messages.length > 0) {
+      const [tournament] = await Tournament.findOrCreate({
+        where: { status: "running" },
+      });
+
+      console.log(tournament.id);
+
+      messages.forEach(message => {
+        const found = paypalNames.find(({ paypal }) =>
+          message.data.snippet.includes(paypal)
+        );
+
+        if (found) {
+          channel.send(`${found.name} has signed up for the tournament`);
+        }
+        console.info("-" + found + "\n");
+      });
+
+      return messages[0].data.historyId;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    throw new Error(error);
+  }
+}
+
+/**
  * Read emails.
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
@@ -91,21 +146,35 @@ function getNewToken(oAuth2Client, callback) {
 async function getEmails(auth) {
   try {
     const gmail = google.gmail({ version: "v1", auth });
-    const res = await gmail.users.messages.list({
+
+    const query = historyId ? "history" : "messages";
+
+    const res = await gmail.users[query].list({
       userId: "me",
-      q: `from:(service@paypal.de) subject:(Sie haben eine Zahlung erhalten) (poker || pokre) after:${new Date().getFullYear()}/1/1`,
+      maxResults: 50,
+      [`labelId${historyId ? "" : "s"}`]: "Label_7895777057724617755",
+      //   q: `from:(service@paypal.de) subject:(Sie haben eine Zahlung erhalten) (poker || pokre || Poker || Pokre || pogre || Pogre) after:${new Date().getFullYear()}/${new Date().getMonth()}/1`,
+      q: `from:(pc@vipfy.store) subject:(Sie haben eine Zahlung erhalten) (poker || pokre || Poker || Pokre || pogre || Pogre) after:${new Date().getFullYear()}/${new Date().getMonth()}/1`,
+      startHistoryId: historyId,
     });
 
     if (res.status != 200) {
       throw new Error(res.status);
     }
 
-    const promises = res.data.messages.map(message =>
-      gmail.users.messages.get({ userId: "me", id: message.id })
-    );
+    if (res.data) {
+      if (res.data.messages) {
+        historyId = await fetchMessages(res.data.messages, gmail);
 
-    const messages = await Promise.all(promises);
-    messages.forEach(message => console.info(message.data.snippet + "\n"));
+        // client.commands.get("buyin").execute();
+      } else if (res.data.history) {
+        await fetchMessages(res.data.history[0].messages, gmail);
+
+        historyId = res.data.historyId;
+      } else if (!res.data.history && res.data.historyId) {
+        console.log("No new messages", res.data.historyId);
+      }
+    }
   } catch (error) {
     throw new Error(error);
   }

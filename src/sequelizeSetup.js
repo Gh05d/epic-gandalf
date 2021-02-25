@@ -32,21 +32,10 @@ if (DATABASE_URL == "localhost") {
   });
 }
 
-const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-
 const Player = sequelize.define("player_data", {
   id: { type: STRING, primaryKey: true },
   name: STRING(50),
-  email: {
-    type: STRING(50),
-    set(email) {
-      if (!email.match(emailRegex)) {
-        throw new Error("Not a valid email");
-      } else {
-        this.setDataValue("email", email);
-      }
-    },
-  },
+  paypal_name: STRING(100),
   admin: { type: BOOLEAN, defaultValue: false },
 });
 

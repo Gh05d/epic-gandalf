@@ -9,6 +9,10 @@ module.exports = {
   GANDALF_AUDIO: Path.resolve("./", "assets", "epic_gandalf.ogg"),
   GANDALF_GIF:
     "https://media1.tenor.com/images/cc7f226783133f6088c33e871a048c2e/tenor.gif?itemid=3551563",
-  POKER_CHANNEL_ID: "777166327466950656",
+  POKER_TEXT_CHANNEL:
+    process.env.ENVIRONMENT == "development"
+      ? "811557367744430130"
+      : "812083914201759825",
+  POKER_VOICE_CHANNEL: "777166327466950656",
   client,
 };

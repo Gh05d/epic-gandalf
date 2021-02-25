@@ -1,15 +1,11 @@
-const { getPlayer } = require("../helpers");
-const {
-  Tournament,
-  PlayerTournament,
-  sequelize,
-} = require("../sequelizeSetup");
+const { signupPlayers } = require("../helpers");
+const { Tournament } = require("../sequelizeSetup");
 
 module.exports = {
   name: "buyin",
   aliases: ["buy-in"],
   admin: true,
-  description: "Lets a player buyin to a running tournament",
+  description: "Lets players buyin to a running tournament",
   execute: async (message, players) => {
     if (players.length < 1) {
       return message.reply(
@@ -23,22 +19,7 @@ module.exports = {
     });
 
     if (tournament) {
-      await sequelize.transaction(async ta => {
-        try {
-          return await Promise.all(
-            players.map(player => {
-              const { id } = getPlayer(player);
-
-              return PlayerTournament.create(
-                { player_id: id, tournament_id: tournament.id },
-                { transaction: ta }
-              );
-            })
-          );
-        } catch (error) {
-          throw new Error(error);
-        }
-      });
+      await signupPlayers(tournament.id, players);
 
       return message.channel.send(
         `New buyin. Good luck to ${players.join(", ")} 💪`
