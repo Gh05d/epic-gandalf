@@ -25,14 +25,13 @@ module.exports = {
   pollingStart: () => {
     channel = client.channels.cache.get(POKER_TEXT_CHANNEL);
     console.log("Started polling 👂");
+
     client.interval = setInterval(() => {
-      // Load client secrets from a local file.
       Fs.readFile("google-credentials.json", (err, content) => {
         if (err) {
           return console.log("Error loading client secret file:", err);
         }
-        // Authorize a client with credentials, then call the Gmail API.
-        console.log("CONTENT: ", content);
+
         authorize(JSON.parse(content), getEmails);
       });
     }, 10000);
@@ -40,6 +39,16 @@ module.exports = {
   pollingEnd: () => {
     clearInterval(client.interval);
     console.log("Stopped polling 🛑");
+  },
+  authorize: () => {
+    // Load client secrets from a local file.
+    Fs.readFile("google-credentials.json", (err, content) => {
+      if (err) {
+        return console.log("Error loading client secret file:", err);
+      }
+      // Authorize a client with credentials, then call the Gmail API.
+      authorize(JSON.parse(content), () => {});
+    });
   },
 };
 
