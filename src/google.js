@@ -32,7 +32,7 @@ module.exports = {
           return console.log("Error loading client secret file:", err);
         }
         // Authorize a client with credentials, then call the Gmail API.
-        console.log("CONTENTS", content);
+        console.log("CONTENT: ", content);
         authorize(JSON.parse(content), getEmails);
       });
     }, 10000);
