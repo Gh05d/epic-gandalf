@@ -1,4 +1,4 @@
-const { POKER_CHANNEL_ID, client } = require("../constants.js");
+const { POKER_VOICE_CHANNEL, client } = require("../constants.js");
 
 module.exports = {
   name: "end",
@@ -6,7 +6,7 @@ module.exports = {
   description: "Stops any voice activity a bot is currently doing",
   admin: true,
   async execute() {
-    const voiceChannel = await client.channels.cache.get(POKER_CHANNEL_ID);
+    const voiceChannel = await client.channels.cache.get(POKER_VOICE_CHANNEL);
 
     await voiceChannel.leave();
   },

@@ -1,4 +1,5 @@
 const { Tournament } = require("../sequelizeSetup");
+const { pollingEnd } = require("../google");
 
 module.exports = {
   name: "poker-abort",
@@ -16,8 +17,11 @@ module.exports = {
         return message.reply("sorry, there seems to be no tournament running");
       }
 
+      pollingEnd();
+
       return message.channel.send("Aborted current Poker Tournament");
     } catch (error) {
+      pollingEnd();
       throw new Error(error.message);
     }
   },

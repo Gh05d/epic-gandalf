@@ -47,7 +47,7 @@ const Tournament = sequelize.define("tournament_data", {
 
 const PlayerTournament = sequelize.define("player_tournament_data", {
   rebuys: INTEGER,
-  position: INTEGER,
+  position: { type: INTEGER, defaultValue: 0 },
   player_id: {
     type: STRING,
     foreignKey: true,

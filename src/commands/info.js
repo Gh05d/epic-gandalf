@@ -1,5 +1,10 @@
 const { computeMoneyDistribution } = require("../helpers");
-const { TournamentView, Tournament } = require("../sequelizeSetup");
+const { client } = require("../constants");
+const {
+  TournamentView,
+  Tournament,
+  PlayerTournament,
+} = require("../sequelizeSetup");
 
 module.exports = {
   name: "info",
@@ -23,6 +28,22 @@ module.exports = {
       } else {
         const moneyDistribution = computeMoneyDistribution(tournament);
 
+        const positions = await PlayerTournament.findAll({
+          where: { tournament_id: tournament.id },
+          raw: true,
+        });
+
+        const finished = [];
+        const active = [];
+
+        positions.forEach(({ position, player_id }) => {
+          if (position) {
+            finished.push(client.players.get(player_id).name);
+          } else {
+            active.push(client.players.get(player_id).name);
+          }
+        });
+
         return await message.channel.send({
           embed: {
             color: "#FFD700",
@@ -32,6 +53,11 @@ module.exports = {
               { name: "Buy-ins", value: tournament.amount_players },
               { name: "Rebuys", value: tournament.rebuys },
               { name: "Pricepool", value: `${tournament.price_pool} €` },
+              { name: "Active Players", value: active.join(", ") },
+              {
+                name: "Finished Players",
+                value: finished.length > 0 ? finished.join(", ") : "None",
+              },
               {
                 name: "Money Distribution",
                 value: tournament.buy_ins > 6 ? "60 / 20 / 10" : "70 / 30",

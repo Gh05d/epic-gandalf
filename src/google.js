@@ -1,8 +1,15 @@
 const Fs = require("fs");
+const Path = require("path");
+const Discord = require("discord.js");
 const readline = require("readline");
 const { google } = require("googleapis");
-const { client, POKER_TEXT_CHANNEL } = require("./constants");
-const { Tournament } = require("./sequelizeSetup");
+const {
+  client,
+  POKER_TEXT_CHANNEL,
+  POKER_VOICE_CHANNEL,
+} = require("./constants");
+const { Tournament, PlayerTournament } = require("./sequelizeSetup");
+const { signupPlayers } = require("./helpers");
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
@@ -20,7 +27,7 @@ module.exports = {
     console.log("Started polling 👂");
     client.interval = setInterval(() => {
       // Load client secrets from a local file.
-      Fs.readFile("credentials.json", (err, content) => {
+      Fs.readFile("google-credentials.json", (err, content) => {
         if (err) {
           return console.log("Error loading client secret file:", err);
         }
@@ -30,7 +37,6 @@ module.exports = {
     }, 10000);
   },
   pollingEnd: () => {
-    historyId = null;
     clearInterval(client.interval);
     console.log("Stopped polling 🛑");
   },
@@ -100,23 +106,35 @@ function getNewToken(oAuth2Client, callback) {
  * @returns {string} historyId
  */
 async function fetchMessages(list, gmail) {
+  let messages = null;
+  let paypalNames = null;
+
   try {
     const promises = list.map(message =>
       gmail.users.messages.get({ userId: "me", id: message.id })
     );
 
-    const messages = await Promise.all(promises);
-    const paypalNames = client.players.map(({ name, paypal_name }) => ({
+    messages = await Promise.all(promises);
+    paypalNames = client.players.map(({ name, paypal_name, id }) => ({
       paypal: paypal_name,
       name,
+      id,
     }));
+  } catch (error) {
+    throw new Error(error);
+  }
 
-    if (messages && messages.length > 0) {
+  if (messages && messages.length > 0) {
+    const { historyId } = messages[0].data;
+
+    try {
       const [tournament] = await Tournament.findOrCreate({
         where: { status: "running" },
       });
 
-      console.log(tournament.id);
+      const buyins = [];
+      const rebuys = [];
+      let attachment;
 
       messages.forEach(message => {
         const found = paypalNames.find(({ paypal }) =>
@@ -124,17 +142,102 @@ async function fetchMessages(list, gmail) {
         );
 
         if (found) {
-          channel.send(`${found.name} has signed up for the tournament`);
+          const isRebuy =
+            message.data.snippet.includes("rebuy") ||
+            message.data.snippet.includes("Rebuy") ||
+            message.data.snippet.includes("REBUY");
+
+          if (isRebuy) {
+            rebuys.push(found);
+          } else {
+            buyins.push(found);
+          }
+
+          console.info(`- ${isRebuy ? "Rebuy" : "Buy-in"}: ${found.paypal} \n`);
         }
-        console.info("-" + found + "\n");
       });
 
-      return messages[0].data.historyId;
-    } else {
-      return null;
+      if (rebuys.length > 0) {
+        await Promise.all(
+          rebuys.map(player =>
+            PlayerTournament.increment(
+              { rebuys: 1 },
+              { where: { player_id: player.id, tournament_id: tournament.id } }
+            )
+          )
+        );
+
+        attachment = new Discord.MessageAttachment(
+          Path.resolve(__dirname, "../", "assets", "smile.png"),
+          "smile.png"
+        );
+      }
+
+      if (buyins.length > 0) {
+        await signupPlayers(
+          tournament.id,
+          buyins.map(({ name }) => name)
+        );
+      }
+
+      [...buyins, ...rebuys].forEach(({ id }) =>
+        channel.send(`!pac <@${id}> 5000`)
+      );
+
+      const voiceChannel = await client.channels.cache.get(POKER_VOICE_CHANNEL);
+      let joinedChannel = await voiceChannel.join();
+
+      const dispatcher = joinedChannel.play(
+        Fs.createReadStream(
+          Path.resolve(
+            __dirname,
+            "../",
+            "assets",
+            rebuys.length > 0 ? "epic_gandalf.ogg" : "nice.webm"
+          ),
+          { type: "webm/opus" }
+        )
+      );
+
+      dispatcher.on("start", async () => {
+        await channel.send(
+          rebuys.length > 0
+            ? {
+                embed: {
+                  title: "Re re re re re reeeeeeeeeeebuy",
+                  description: `${rebuys
+                    .map(({ name }) => name)
+                    .join(", ")} ha${
+                    rebuys.length > 1 ? "ve" : "s"
+                  } made a rebuy`,
+                  files: [attachment],
+                  image: { url: "attachment://smile.png" },
+                },
+              }
+            : `${buyins.map(({ name }) => name).join(", ")} ha${
+                buyins.length > 1 ? "ve" : "s"
+              } signed up for the tournament 🃏`
+        );
+      });
+
+      dispatcher.on("finish", () => voiceChannel.leave());
+
+      dispatcher.on("on", error => console.error(error));
+
+      return historyId;
+    } catch (error) {
+      if (error.message.includes("SequelizeUniqueConstraintError")) {
+        console.log(
+          `Player is already signed up for the tournament -> ${error.message}`
+        );
+
+        return historyId;
+      } else {
+        throw new Error(error);
+      }
     }
-  } catch (error) {
-    throw new Error(error);
+  } else {
+    return null;
   }
 }
 
@@ -148,13 +251,17 @@ async function getEmails(auth) {
     const gmail = google.gmail({ version: "v1", auth });
 
     const query = historyId ? "history" : "messages";
+    const today = new Date();
 
     const res = await gmail.users[query].list({
       userId: "me",
       maxResults: 50,
       [`labelId${historyId ? "" : "s"}`]: "Label_7895777057724617755",
-      //   q: `from:(service@paypal.de) subject:(Sie haben eine Zahlung erhalten) (poker || pokre || Poker || Pokre || pogre || Pogre) after:${new Date().getFullYear()}/${new Date().getMonth()}/1`,
-      q: `from:(pc@vipfy.store) subject:(Sie haben eine Zahlung erhalten) (poker || pokre || Poker || Pokre || pogre || Pogre) after:${new Date().getFullYear()}/${new Date().getMonth()}/1`,
+      q: `from:(${
+        process.env.ENVIRONMENT == "development"
+          ? "pc@vipfy.store"
+          : "service@paypal.de"
+      }) subject:(Sie haben eine Zahlung erhalten) (rebuy || Rebuy || REBUY || poker || pokre || Poker || Pokre || pogre || Pogre) after:${today.getFullYear()}/${today.getMonth()}/${today.getDate()}`,
       startHistoryId: historyId,
     });
 
@@ -165,8 +272,6 @@ async function getEmails(auth) {
     if (res.data) {
       if (res.data.messages) {
         historyId = await fetchMessages(res.data.messages, gmail);
-
-        // client.commands.get("buyin").execute();
       } else if (res.data.history) {
         await fetchMessages(res.data.history[0].messages, gmail);
 

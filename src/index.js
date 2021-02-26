@@ -6,7 +6,7 @@ const Path = require("path");
 const Discord = require("discord.js");
 
 const { Player } = require("./sequelizeSetup");
-const { client, POKER_TEXT_CHANNEL } = require("./constants.js");
+const { client } = require("./constants.js");
 
 const commandFiles = Fs.readdirSync(
   Path.resolve(__dirname, "commands")
@@ -17,6 +17,8 @@ for (const file of commandFiles) {
 
   client.commands.set(command.name, command);
 }
+
+client.historyId = null;
 
 const PREFIX = "$";
 

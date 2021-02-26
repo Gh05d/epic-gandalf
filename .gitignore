@@ -1,4 +1,4 @@
 .env
 node_modules/
-credentials.json
+google-credentials.json
 token.json

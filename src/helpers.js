@@ -16,6 +16,14 @@ function getPlayer(nickname) {
 
 module.exports = {
   getPlayer,
+  /**
+   * Bot joins the poker voice channel and plays a sound there
+   *
+   * @param {string} sound Link to the soundfile
+   * @param {object} message The message object so that the function can set messages to the channel
+   * @param {string} [startMessage] Optional message to be played at the start of the sound
+   * @param {string} [endMessage] Optional message to be played at the end of the sound
+   */
   playSound: async (sound, message, startMessage, endMessage) => {
     const voiceChannel = await client.channels.cache.get(POKER_VOICE_CHANNEL);
     let joinedChannel = await voiceChannel.join();
@@ -52,16 +60,20 @@ module.exports = {
     const results = [
       {
         name: "Winner 🏆",
-        value: `${priceMoney * percentageFirst} €`,
+        value: `${(priceMoney * percentageFirst).toFixed(2)} €`,
         inline: true,
       },
-      { name: "Second 🥈", value: `${priceMoney * 0.3} €`, inline: true },
+      {
+        name: "Second 🥈",
+        value: `${(priceMoney * 0.3).toFixed(2)} €`,
+        inline: true,
+      },
     ];
 
     if (tournament.buy_ins > 6) {
       results.push({
         name: "Third 🥉",
-        value: `${priceMoney * 0.1} €`,
+        value: `${(priceMoney * 0.1).toFixed(2)} €`,
         inline: true,
       });
     }
