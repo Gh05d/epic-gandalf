@@ -1,6 +1,7 @@
 const Fs = require("fs");
+const { authorize } = require("./google");
 
-const { authorize } = require("./google")(function () {
+(function () {
   // Load client secrets from a local file.
   Fs.readFile("google-credentials.json", (err, content) => {
     if (err) {
