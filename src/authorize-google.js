@@ -54,7 +54,7 @@ function getNewToken(oAuth2Client) {
 
   client.oAuth2Client = oAuth2Client;
 
-  OWNER.send("Authorize this app by visiting this url:", authUrl);
+  OWNER.send(`Authorize this app by visiting this url: ${authUrl}`);
 }
 
 function sendToken(code) {
