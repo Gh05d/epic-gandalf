@@ -279,6 +279,8 @@ async function getEmails(auth) {
       } else if (!res.data.history && res.data.historyId) {
         console.log("No new messages", res.data.historyId);
       }
+    } else {
+      console.log("Nothing", res);
     }
   } catch (error) {
     throw new Error(error);
