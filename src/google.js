@@ -99,9 +99,7 @@ function getNewToken(oAuth2Client, callback) {
   OWNER.send(`Authorize this app by visiting this url: ${authUrl}`);
 
   collector.on("collect", message => {
-    console.log("FIRE", message.content);
     const [_prefix, code] = message.content.split(" ");
-    console.log("FIRE ~ file: google.js ~ line 103 ~ getNewToken ~ code", code);
 
     oAuth2Client.getToken(code, (err, token) => {
       if (err) {
@@ -300,6 +298,8 @@ async function getEmails(auth) {
     if (res.status != 200) {
       throw new Error(res.status);
     }
+
+    console.log("RESDATA: ", res);
 
     if (res.data) {
       if (res.data.messages) {
