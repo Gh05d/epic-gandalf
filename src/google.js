@@ -98,12 +98,12 @@ function getNewToken(oAuth2Client, callback) {
         if (err) {
           return console.error(err);
         }
-        console.log("Token stored to", TOKEN_PATH);
-      });
 
-      OWNER.send("Successfully authorized");
-      callback(oAuth2Client);
-      collector.stop();
+        console.log("Token stored to", TOKEN_PATH);
+        OWNER.send("Successfully authorized");
+        callback(oAuth2Client);
+        collector.stop();
+      });
     });
   });
 
