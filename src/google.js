@@ -99,6 +99,7 @@ function getNewToken(oAuth2Client, callback) {
   OWNER.send(`Authorize this app by visiting this url: ${authUrl}`);
 
   collector.on("collect", message => {
+    console.log("FIRE", message.content);
     const [_prefix, code] = message.content.split(" ");
     console.log("FIRE ~ file: google.js ~ line 103 ~ getNewToken ~ code", code);
 
