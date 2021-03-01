@@ -252,7 +252,7 @@ async function getEmails(auth) {
 
     const query = historyId ? "history" : "messages";
     const today = new Date();
-    console.log("POLL");
+
     const res = await gmail.users[query].list({
       userId: "me",
       maxResults: 50,
@@ -264,11 +264,11 @@ async function getEmails(auth) {
       }) subject:(Sie haben eine Zahlung erhalten) (rebuy || Rebuy || REBUY || poker || pokre || Poker || Pokre || pogre || Pogre) after:${today.getFullYear()}/${today.getMonth()}/${today.getDate()}`,
       startHistoryId: historyId,
     });
-    console.log("POLL DONE");
+
     if (res.status != 200) {
       throw new Error(res.status);
     }
-    console.log("RES: ", res);
+
     if (res.data) {
       if (res.data.messages) {
         historyId = await fetchMessages(res.data.messages, gmail);
