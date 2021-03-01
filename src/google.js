@@ -7,16 +7,11 @@ const {
   client,
   POKER_TEXT_CHANNEL,
   POKER_VOICE_CHANNEL,
+  SCOPES,
+  TOKEN_PATH,
 } = require("./constants");
 const { Tournament, PlayerTournament } = require("./sequelizeSetup");
 const { signupPlayers } = require("./helpers");
-
-// If modifying these scopes, delete token.json.
-const SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
-// The file token.json stores the user's access and refresh tokens, and is
-// created automatically when the authorization flow completes for the first
-// time.
-const TOKEN_PATH = "token.json";
 
 let historyId = null;
 let channel = null;

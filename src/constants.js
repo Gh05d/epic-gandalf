@@ -15,4 +15,10 @@ module.exports = {
       : "812083914201759825",
   POKER_VOICE_CHANNEL: "777166327466950656",
   client,
+  // If modifying these scopes, delete token.json.
+  SCOPES: ["https://www.googleapis.com/auth/gmail.readonly"],
+  // The file token.json stores the user's access and refresh tokens, and is
+  // created automatically when the authorization flow completes for the first
+  // time.
+  TOKEN_PATH: "token.json",
 };
