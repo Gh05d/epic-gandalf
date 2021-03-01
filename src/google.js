@@ -18,9 +18,11 @@ const OWNER_ID = "295126062265008128";
 let OWNER;
 
 module.exports = {
-  pollingStart: () => {
+  pollingStart: async () => {
     channel = client.channels.cache.get(POKER_TEXT_CHANNEL);
     OWNER = client.users.cache.get(OWNER_ID);
+
+    await readCredentialFile();
 
     console.log("Started polling 👂");
 
@@ -40,6 +42,18 @@ module.exports = {
   },
   authorize,
 };
+
+async function readCredentialFile() {
+  try {
+  } catch (err) {
+    return console.log("Error loading client secret file:", err);
+  }
+  const content = await Fs.readFileSync("google-credentials.json");
+
+  return authorize(JSON.parse(content), () =>
+    console.log("Authorization complete")
+  );
+}
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
