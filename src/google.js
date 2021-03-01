@@ -2,6 +2,7 @@ const Fs = require("fs");
 const Path = require("path");
 const Discord = require("discord.js");
 const { google } = require("googleapis");
+const readline = require("readline");
 const {
   client,
   POKER_TEXT_CHANNEL,
@@ -14,16 +15,10 @@ const { signupPlayers } = require("./helpers");
 
 let historyId = null;
 let channel = null;
-const OWNER_ID = "295126062265008128";
-let OWNER;
 
 module.exports = {
-  pollingStart: async () => {
+  pollingStart: () => {
     channel = client.channels.cache.get(POKER_TEXT_CHANNEL);
-    OWNER = client.users.cache.get(OWNER_ID);
-
-    await readCredentialFile();
-
     console.log("Started polling 👂");
 
     client.interval = setInterval(() => {
@@ -34,7 +29,7 @@ module.exports = {
 
         authorize(JSON.parse(content), getEmails);
       });
-    }, 60000);
+    }, 10000);
   },
   pollingEnd: () => {
     clearInterval(client.interval);
@@ -42,18 +37,6 @@ module.exports = {
   },
   authorize,
 };
-
-async function readCredentialFile() {
-  try {
-  } catch (err) {
-    return console.log("Error loading client secret file:", err);
-  }
-  const content = await Fs.readFileSync("google-credentials.json");
-
-  return authorize(JSON.parse(content), () =>
-    console.log("Authorization complete")
-  );
-}
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
@@ -91,40 +74,27 @@ function getNewToken(oAuth2Client, callback) {
     scope: SCOPES,
   });
 
-  const collector = channel.createMessageCollector(
-    m => m.content.includes("code") && m.author.id == OWNER_ID,
-    { time: 60000 }
-  );
+  console.log("Authorize this app by visiting this url:", authUrl);
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
 
-  OWNER.send(`Authorize this app by visiting this url: ${authUrl}`);
-
-  collector.on("collect", message => {
-    const [_prefix, code] = message.content.split(" ");
-
+  rl.question("Enter the code from that page here: ", code => {
+    rl.close();
     oAuth2Client.getToken(code, (err, token) => {
       if (err) {
         return console.error("Error retrieving access token", err);
       }
-
       oAuth2Client.setCredentials(token);
       // Store the token to disk for later program executions
       Fs.writeFile(TOKEN_PATH, JSON.stringify(token), err => {
-        if (err) {
-          return console.error(err);
-        }
-
+        if (err) return console.error(err);
         console.log("Token stored to", TOKEN_PATH);
-        OWNER.send("Successfully authorized");
-
-        if (callback) {
-          callback(oAuth2Client);
-        }
-        collector.stop();
       });
+      callback(oAuth2Client);
     });
   });
-
-  collector.on("end", () => OWNER.send("Stopped listening for the code"));
 }
 
 /**
@@ -299,8 +269,6 @@ async function getEmails(auth) {
       throw new Error(res.status);
     }
 
-    console.log("RESDATA: ", res);
-
     if (res.data) {
       if (res.data.messages) {
         historyId = await fetchMessages(res.data.messages, gmail);
@@ -308,12 +276,11 @@ async function getEmails(auth) {
         await fetchMessages(res.data.history[0].messages, gmail);
 
         historyId = res.data.historyId;
-      } else if (
-        !res.data.resultSizeEstimate ||
-        (!res.data.history && res.data.historyId)
-      ) {
+      } else if (!res.data.history && res.data.historyId) {
         console.log("No new messages", res.data.historyId);
       }
+    } else {
+      console.log("Nothing", res);
     }
   } catch (error) {
     throw new Error(error);
