@@ -100,6 +100,7 @@ function getNewToken(oAuth2Client, callback) {
 
   collector.on("collect", message => {
     const [_prefix, code] = message.content.split(" ");
+    console.log("FIRE ~ file: google.js ~ line 103 ~ getNewToken ~ code", code);
 
     oAuth2Client.getToken(code, (err, token) => {
       if (err) {
@@ -115,7 +116,10 @@ function getNewToken(oAuth2Client, callback) {
 
         console.log("Token stored to", TOKEN_PATH);
         OWNER.send("Successfully authorized");
-        callback(oAuth2Client);
+
+        if (callback) {
+          callback(oAuth2Client);
+        }
         collector.stop();
       });
     });
