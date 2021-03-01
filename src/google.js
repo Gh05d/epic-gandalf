@@ -2,7 +2,6 @@ const Fs = require("fs");
 const Path = require("path");
 const Discord = require("discord.js");
 const { google } = require("googleapis");
-const readline = require("readline");
 const {
   client,
   POKER_TEXT_CHANNEL,
@@ -15,10 +14,14 @@ const { signupPlayers } = require("./helpers");
 
 let historyId = null;
 let channel = null;
+const OWNER_ID = "295126062265008128";
+let OWNER;
 
 module.exports = {
   pollingStart: () => {
     channel = client.channels.cache.get(POKER_TEXT_CHANNEL);
+    OWNER = client.users.cache.get(OWNER_ID);
+
     console.log("Started polling 👂");
 
     client.interval = setInterval(() => {
@@ -29,7 +32,7 @@ module.exports = {
 
         authorize(JSON.parse(content), getEmails);
       });
-    }, 10000);
+    }, 60000);
   },
   pollingEnd: () => {
     clearInterval(client.interval);
@@ -74,27 +77,37 @@ function getNewToken(oAuth2Client, callback) {
     scope: SCOPES,
   });
 
-  console.log("Authorize this app by visiting this url:", authUrl);
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
+  const collector = channel.createMessageCollector(
+    m => m.content.includes("code") && m.author.id == OWNER_ID,
+    { time: 60000 }
+  );
 
-  rl.question("Enter the code from that page here: ", code => {
-    rl.close();
+  OWNER.send(`Authorize this app by visiting this url: ${authUrl}`);
+
+  collector.on("collect", message => {
+    const [_prefix, code] = message.content.split(" ");
+
     oAuth2Client.getToken(code, (err, token) => {
       if (err) {
         return console.error("Error retrieving access token", err);
       }
+
       oAuth2Client.setCredentials(token);
       // Store the token to disk for later program executions
       Fs.writeFile(TOKEN_PATH, JSON.stringify(token), err => {
-        if (err) return console.error(err);
+        if (err) {
+          return console.error(err);
+        }
         console.log("Token stored to", TOKEN_PATH);
       });
+
+      OWNER.send("Successfully authorized");
       callback(oAuth2Client);
+      collector.stop();
     });
   });
+
+  collector.on("end", () => OWNER.send("Stopped listening for the code"));
 }
 
 /**
@@ -276,11 +289,12 @@ async function getEmails(auth) {
         await fetchMessages(res.data.history[0].messages, gmail);
 
         historyId = res.data.historyId;
-      } else if (!res.data.history && res.data.historyId) {
+      } else if (
+        !res.data.resultSizeEstimate ||
+        (!res.data.history && res.data.historyId)
+      ) {
         console.log("No new messages", res.data.historyId);
       }
-    } else {
-      console.log("Nothing", res);
     }
   } catch (error) {
     throw new Error(error);
