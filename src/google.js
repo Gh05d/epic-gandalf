@@ -157,6 +157,13 @@ async function fetchMessages(list, gmail) {
         }
       });
 
+      if (buyins.length > 0) {
+        await signupPlayers(
+          tournament.id,
+          buyins.map(({ name }) => name)
+        );
+      }
+
       if (rebuys.length > 0) {
         await Promise.all(
           rebuys.map(player =>
@@ -170,13 +177,6 @@ async function fetchMessages(list, gmail) {
         attachment = new Discord.MessageAttachment(
           Path.resolve(__dirname, "../", "assets", "smile.png"),
           "smile.png"
-        );
-      }
-
-      if (buyins.length > 0) {
-        await signupPlayers(
-          tournament.id,
-          buyins.map(({ name }) => name)
         );
       }
 
@@ -222,7 +222,7 @@ async function fetchMessages(list, gmail) {
 
       dispatcher.on("finish", () => voiceChannel.leave());
 
-      dispatcher.on("on", error => console.error(error));
+      dispatcher.on("on", error => console.error("Something wrong", error));
 
       return historyId;
     } catch (error) {
@@ -256,7 +256,7 @@ async function getEmails(auth) {
     const res = await gmail.users[query].list({
       userId: "me",
       maxResults: 50,
-      [`labelId${historyId ? "" : "s"}`]: "Label_7895777057724617755",
+      //[`labelId${historyId ? "" : "s"}`]: "Label_7895777057724617755",
       q: `from:(${
         process.env.ENVIRONMENT == "development"
           ? "pc@vipfy.store"

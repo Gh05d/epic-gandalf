@@ -37,7 +37,6 @@ function authorize(credentials) {
     }
     oAuth2Client.setCredentials(JSON.parse(token));
     OWNER.send("Successfully authorized");
-    // callback(oAuth2Client);
   });
 }
 
@@ -73,7 +72,6 @@ function sendToken(code) {
     });
 
     OWNER.send("Successfully authorized");
-    // callback(oAuth2Client);
   });
 }
 

@@ -15,10 +15,10 @@ if (DATABASE_URL == "localhost") {
   sequelize = new Sequelize("poker", "postgres", DATABASE_PASSWORD, {
     host: DATABASE_URL,
     dialect: "postgres",
-    logging:
-      DEBUG_DATABASE && DEBUG_DATABASE.toLowerCase() != "false"
-        ? console.info
-        : false,
+    logging: false,
+    // DEBUG_DATABASE && DEBUG_DATABASE.toLowerCase() != "false"
+    //   ? console.info
+    //   : false,
     define,
   });
 } else {

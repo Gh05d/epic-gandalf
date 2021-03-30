@@ -37,7 +37,7 @@ client.once("ready", async () => {
 client.login(process.env.GANDALFS_TOKEN);
 
 client.on("message", async message => {
-  if (message.author == "bot") {
+  if (message.author && message.author.bot) {
     return;
   }
 

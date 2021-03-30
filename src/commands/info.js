@@ -59,8 +59,8 @@ module.exports = {
                 value: finished.length > 0 ? finished.join(", ") : "None",
               },
               {
-                name: "Money Distribution",
-                value: tournament.buy_ins > 6 ? "60 / 20 / 10" : "70 / 30",
+                name: "Money Distribution in %",
+                value: tournament.buy_ins > 6 ? "60 / 30 / 10" : "70 / 30",
               },
               ...moneyDistribution,
             ],

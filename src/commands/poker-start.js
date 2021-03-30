@@ -5,7 +5,6 @@ const {
   PlayerTournament,
   sequelize,
 } = require("../sequelizeSetup");
-const { client } = require("../constants");
 
 module.exports = {
   name: "poker-start",
@@ -56,9 +55,9 @@ module.exports = {
         pollingStart();
 
         return message.channel.send(
-          ` !png 10 20 \n Starting Poker Tournament. Good luck to ${players.join(
+          `Good luck to ${players.join(
             ", "
-          )} 💪`
+          )} 💪. Enter !png 10 20 \n to start the Poker Tournament.`
         );
       } else {
         return message.reply(
