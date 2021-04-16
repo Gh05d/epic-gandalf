@@ -261,7 +261,9 @@ async function getEmails(auth) {
         process.env.ENVIRONMENT == "development"
           ? "pc@vipfy.store"
           : "service@paypal.de"
-      }) subject:(Sie haben eine Zahlung erhalten) (rebuy || Rebuy || REBUY || poker || pokre || Poker || Pokre || pogre || Pogre) after:${today.getFullYear()}/${today.getMonth()}/${today.getDate()}`,
+      }) subject:(Sie haben eine Zahlung erhalten) (rebuy || Rebuy || REBUY || poker || pokre || Poker || Pokre || pogre || Pogre) after:${today.getFullYear()}/${
+        today.getMonth() + 1
+      }/${today.getDate()}`,
       startHistoryId: historyId,
     });
 

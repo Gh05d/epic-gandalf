@@ -1,6 +1,11 @@
 const Sequelize = require("sequelize");
 const { STRING, INTEGER, DATE, BIGINT, ARRAY, ENUM, BOOLEAN } = Sequelize;
-const { DATABASE_PASSWORD, DATABASE_URL, DEBUG_DATABASE } = process.env;
+const {
+  DATABASE_PASSWORD,
+  DATABASE_URL,
+  DEBUG_DATABASE = "",
+  ENVIRONMENT,
+} = process.env;
 
 let sequelize;
 
@@ -11,26 +16,25 @@ const define = {
   underscored: true,
 };
 
-if (DATABASE_URL == "localhost") {
-  sequelize = new Sequelize("poker", "postgres", DATABASE_PASSWORD, {
+sequelize = new Sequelize(
+  ENVIRONMENT == "development" ? "poker_development" : "poker",
+  "postgres",
+  DATABASE_PASSWORD,
+  {
     host: DATABASE_URL,
     dialect: "postgres",
-    logging: false,
-    // DEBUG_DATABASE && DEBUG_DATABASE.toLowerCase() != "false"
-    //   ? console.info
-    //   : false,
+    logging: DEBUG_DATABASE.toLowerCase() != "false" ? console.info : false,
     define,
-  });
-} else {
-  sequelize = new Sequelize(DATABASE_URL, {
-    dialect: "postgres",
-    dialectOptions: { ssl: { require: true, rejectUnauthorized: false } },
-    protocol: "postgres",
-    port: "5432",
-    logging: false,
-    define,
-  });
-}
+  }
+);
+// sequelize = new Sequelize(DATABASE_URL, {
+//   dialect: "postgres",
+//   dialectOptions: { ssl: { require: true, rejectUnauthorized: false } },
+//   protocol: "postgres",
+//   port: "5432",
+//   logging: false,
+//   define,
+// });
 
 const Player = sequelize.define("player_data", {
   id: { type: STRING, primaryKey: true },

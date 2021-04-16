@@ -5,7 +5,10 @@ module.exports = {
   aliases: ["trump", "tronald", "the_donald", "the-donald"],
   async execute(message) {
     const config = { headers: { Accept: "application/hal+json" } };
-    const res = await axios.get("https://api.tronalddump.io/random/quote", config);
+    const res = await axios.get(
+      "https://api.tronalddump.io/random/quote",
+      config
+    );
 
     if (res && res.status === 200) {
       return await message.channel.send({
