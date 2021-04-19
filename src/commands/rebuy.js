@@ -36,14 +36,16 @@ module.exports = {
         return message.reply(`${player} is not in the tournament!`);
       }
 
+      const image = player == "bassi" ? "bassi.jpeg" : "smile.png";
+
       const attachment = new Discord.MessageAttachment(
-        Path.resolve(__dirname, "../../", "assets", "smile.png"),
+        Path.resolve(__dirname, "../../", "assets", image),
         "smile.png"
       );
       const start = {
         embed: {
           title: "Re re re re re reeeeeeeeeeebuy",
-          description: `${player} has made a rebuy`,
+          description: `Rebuy ${player}`,
           files: [attachment],
           image: { url: "attachment://smile.png" },
         },

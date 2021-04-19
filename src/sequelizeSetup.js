@@ -44,7 +44,7 @@ const Player = sequelize.define("player_data", {
 });
 
 const Tournament = sequelize.define("tournament_data", {
-  id: { type: INTEGER, primaryKey: true, autoIncrement: true },
+  id: { type: BIGINT, primaryKey: true, autoIncrement: true },
   date: DATE,
   status: ENUM("running", "finished", "aborted"),
 });

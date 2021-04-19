@@ -10,7 +10,11 @@ const {
   SCOPES,
   TOKEN_PATH,
 } = require("./constants");
-const { Tournament, PlayerTournament } = require("./sequelizeSetup");
+const {
+  Tournament,
+  PlayerTournament,
+  TournamentView,
+} = require("./sequelizeSetup");
 const { signupPlayers } = require("./helpers");
 
 let historyId = null;
@@ -136,20 +140,26 @@ async function fetchMessages(list, gmail) {
       const rebuys = [];
       let attachment;
 
+      const view = await TournamentView.findByPk(tournament.id, { raw: true });
+
       messages.forEach(message => {
         const found = paypalNames.find(({ paypal }) =>
           message.data.snippet.includes(paypal)
         );
 
         if (found) {
-          const isRebuy =
-            message.data.snippet.includes("rebuy") ||
-            message.data.snippet.includes("Rebuy") ||
-            message.data.snippet.includes("REBUY");
+          const isRebuy = message.data.snippet.toLowerCase().includes("rebuy");
 
           if (isRebuy) {
             rebuys.push(found);
           } else {
+            if (view) {
+              const signedUp = view.players.includes(found.name);
+
+              if (signedUp) {
+                return rebuys.push(found);
+              }
+            }
             buyins.push(found);
           }
 
@@ -211,7 +221,15 @@ async function fetchMessages(list, gmail) {
                     rebuys.length > 1 ? "ve" : "s"
                   } made a rebuy`,
                   files: [attachment],
-                  image: { url: "attachment://smile.png" },
+                  image: {
+                    url: `attachment://${
+                      rebuys.length == 1
+                        ? rebuys[0] == "bassi"
+                          ? "bassi.jpeg"
+                          : "smile.png"
+                        : "smile.png"
+                    }`,
+                  },
                 },
               }
             : `${buyins.map(({ name }) => name).join(", ")} ha${
