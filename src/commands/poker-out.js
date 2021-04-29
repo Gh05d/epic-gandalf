@@ -50,9 +50,10 @@ module.exports = {
 
       const lowestPosition = positions.reduce((acc, cV) => {
         if (acc === 0) {
+          console.log("FIRE");
           return cV.position;
         } else {
-          return acc < cV.position ? acc : cV.position;
+          return acc !== 0 && acc < cV.position ? acc : cV.position;
         }
       }, 0);
 
