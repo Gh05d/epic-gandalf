@@ -24,6 +24,7 @@ module.exports = {
   pollingStart: () => {
     channel = client.channels.cache.get(POKER_TEXT_CHANNEL);
     console.log("Started polling 👂");
+    client.messagesProcessed = [];
 
     client.interval = setInterval(() => {
       Fs.readFile("google-credentials.json", (err, content) => {
@@ -36,6 +37,7 @@ module.exports = {
     }, 10000);
   },
   pollingEnd: () => {
+    client.messagesProcessed = [];
     clearInterval(client.interval);
     console.log("Stopped polling 🛑");
   },
@@ -114,9 +116,9 @@ async function fetchMessages(list, gmail) {
   let paypalNames = null;
 
   try {
-    const promises = list.map(message =>
-      gmail.users.messages.get({ userId: "me", id: message.id })
-    );
+    const promises = list.map(message => {
+      return gmail.users.messages.get({ userId: "me", id: message.id });
+    });
 
     messages = await Promise.all(promises);
     paypalNames = client.players.map(({ name, paypal_name, id }) => ({
@@ -147,7 +149,12 @@ async function fetchMessages(list, gmail) {
           message.data.snippet.includes(paypal)
         );
 
-        if (found) {
+        // Workaround to ensure that messages only get processed once
+        const processed = client.messagesProcessed.find(
+          id => id == message.data.id
+        );
+
+        if (found && !processed) {
           const isRebuy = message.data.snippet.toLowerCase().includes("rebuy");
 
           if (isRebuy) {
@@ -193,6 +200,14 @@ async function fetchMessages(list, gmail) {
       [...buyins, ...rebuys].forEach(({ id }) =>
         channel.send(`!pac <@${id}> 5000`)
       );
+
+      // try {
+      //   for await (label of updateLabels) {
+      //     await modifyLabels(gmail, label, "Label_8487832074271064634");
+      //   }
+      // } catch (error) {
+      //   console.log("Could not update the label", error);
+      // }
 
       const voiceChannel = await client.channels.cache.get(POKER_VOICE_CHANNEL);
       let joinedChannel = await voiceChannel.join();
@@ -274,7 +289,6 @@ async function getEmails(auth) {
     const res = await gmail.users[query].list({
       userId: "me",
       maxResults: 50,
-      //[`labelId${historyId ? "" : "s"}`]: "Label_7895777057724617755",
       q: `from:(${
         process.env.ENVIRONMENT == "development"
           ? "pc@vipfy.store"

@@ -38,6 +38,7 @@ module.exports = {
         where: { tournament_id: tournament.id },
         raw: true,
       });
+
       const alreadyFinished = positions.find(
         entry => entry.position && entry.player_id == player.id
       );
@@ -50,7 +51,6 @@ module.exports = {
 
       const lowestPosition = positions.reduce((acc, cV) => {
         if (acc === 0) {
-          console.log("FIRE");
           return cV.position;
         } else {
           return acc !== 0 && acc < cV.position ? acc : cV.position;
