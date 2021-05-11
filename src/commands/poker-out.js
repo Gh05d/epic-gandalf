@@ -52,8 +52,10 @@ module.exports = {
       const lowestPosition = positions.reduce((acc, cV) => {
         if (acc === 0) {
           return cV.position;
+        } else if (acc !== 0 && cV.position !== 0) {
+          return acc < cV.position ? acc : cV.position;
         } else {
-          return acc !== 0 && acc < cV.position ? acc : cV.position;
+          return acc;
         }
       }, 0);
 

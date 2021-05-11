@@ -156,6 +156,7 @@ async function fetchMessages(list, gmail) {
 
         if (found && !processed) {
           const isRebuy = message.data.snippet.toLowerCase().includes("rebuy");
+          client.messagesProcessed.push(message.data.id);
 
           if (isRebuy) {
             rebuys.push(found);
@@ -310,7 +311,10 @@ async function getEmails(auth) {
         await fetchMessages(res.data.history[0].messages, gmail);
 
         historyId = res.data.historyId;
-      } else if (!res.data.history && res.data.historyId) {
+      } else if (
+        (!res.data.history && res.data.historyId) ||
+        !res.data.resultSizeEstimate
+      ) {
         console.log("No new messages", res.data.historyId);
       }
     } else {
