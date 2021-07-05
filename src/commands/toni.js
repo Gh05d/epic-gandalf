@@ -39,6 +39,13 @@ module.exports = {
     if (arg) {
       inList = wisdom.find(item => item == arg);
 
+      if (arg && arg == "info") {
+        return message.reply(
+          `just write $toni for a random soundfile, for a specific one, use $toni [sound] with one of these as sound parameter: ${wisdom.join(
+            ", "
+          )}`
+        );
+      }
       if (!inList) {
         return message.reply(
           "could not find that command. Use $toni info for all sounds!"
@@ -46,14 +53,6 @@ module.exports = {
       }
     } else {
       arg = wisdom[Math.floor(Math.random() * wisdom.length)];
-    }
-
-    if (arg == "info") {
-      return message.reply(
-        `just write $toni for a random soundfile, for a specific one, use $toni [sound] with one of these as sound parameter: ${wisdom.join(
-          ", "
-        )}`
-      );
     }
 
     await playSound(

@@ -290,11 +290,11 @@ async function getEmails(auth) {
     const res = await gmail.users[query].list({
       userId: "me",
       maxResults: 50,
-      q: `from:(${
+      q: `from:${
         process.env.ENVIRONMENT == "development"
           ? "pc@vipfy.store"
           : "service@paypal.de"
-      }) subject:(Sie haben eine Zahlung erhalten) (rebuy || Rebuy || REBUY || poker || pokre || Poker || Pokre || pogre || Pogre) after:${today.getFullYear()}/${
+      } subject:"Sie haben eine Zahlung erhalten" (rebuy || Rebuy || REBUY || poker || pokre || Poker || Pokre || pogre || Pogre) after:${today.getFullYear()}/${
         today.getMonth() + 1
       }/${today.getDate()}`,
       startHistoryId: historyId,

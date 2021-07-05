@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ENVIRONMENT=production node src/index.js",
+    "start": "ENVIRONMENT=production DATABASE_URL=$(heroku config:get DATABASE_URL -a poker-database) node src/index.js",
     "dev": "ENVIRONMENT=development nodemon src/index.js",
     "debug": "ENVIRONMENT=development DEBUG_DATABASE=true nodemon src/index.js"
   },

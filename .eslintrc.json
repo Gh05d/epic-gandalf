@@ -1,18 +1,19 @@
 {
-  "env": {
-    "es6": true,
-    "node": true
-  },
-  "extends": ["eslint:recommended", "prettier"],
-  "plugins": ["prettier"],
-  "parserOptions": {
-    "ecmaVersion": 2016
-  },
-  "rules": {
-    "prettier/prettier": ["error"],
-    "linebreak-style": ["error", "unix"],
-    "quotes": ["error", "double"],
-    "semi": ["error", "always"],
-    "no-unreachable": "off"
-  }
+	"env": {
+		"es6": true,
+		"node": true
+	},
+	"extends": ["eslint:recommended", "prettier"],
+	"plugins": ["prettier"],
+	"parserOptions": {
+		"ecmaVersion": 2016
+	},
+	"rules": {
+		"prettier/prettier": ["error"],
+		"linebreak-style": ["error", "unix"],
+		"quotes": ["error", "double"],
+		"semi": ["error", "always"],
+		"no-unreachable": "off",
+		"arrowParens": "avoid"
+	}
 }
