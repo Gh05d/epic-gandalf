@@ -4,7 +4,7 @@ const { playSound } = require("../helpers");
 module.exports = {
 	name: "dear-diary",
 	description: "Give me a quote from our Malle 21 trip",
-	aliases: ["malle21", "liebes-tagebuch", "leibes-tagebuch"],
+	aliases: ["malle21", "tagebuch", "diary", "liebes-tagebuch", "leibes-tagebuch"],
 	execute: async message => {
 		const malleQuotes = [
 			"wir müssen zwei Stunden auf unser Mietauto warten. Markus sagt 'alles ist scheisse'",
@@ -36,6 +36,7 @@ module.exports = {
 			"Flo bespasst uns die ganze Zeit aus der Toilette raus",
 			"Och Jungs, würgt ihr eure Freundin eigentlich auch?",
 			"Wie lange war deine letzte monogame Beziehung? #deeptalk",
+			"Warum stehst du jeden morgen auf? #Captain Deeptalk",
 			"Ich glaube, du siehst aus wie ein Schlagersänger. Ne, ich mach M&A. Aber du machst doch sicher nicht die Kleinen platt. Sicher??? Schlampe 1 zu Hanno Herzlich.",
 			"Du siehst aus wie ein Erzieher! Ich liebe Kinder.",
 			"Ich bin nur körperlich jüdisch. Meine Eichel ist ganz wund!",
@@ -52,10 +53,13 @@ module.exports = {
 			"So Flo, noch ein Bier dann fahren wir - Beide Fahrer stossen an -",
 			"Domme was machst du da? Ich doch ne wunde Eichel!",
 			"Bier ist das neue Wasser!",
+			"respect the unrespected",
+			"Schlampe1: Ich fühle mich wie ein Kerl",
 			"LEASH THE UNLEASHED",
 			"RASIER DIE UNRASIERT",
 			"SCHNÄPS THE UNSCHNÄPSED",
 			"BURN THE UNBURNT",
+			"smoke the unsmoked",
 			"Jungs, wir haben nur noch 8 Paletten Bier, das reicht niemals! Kauft mal noch 10",
 			"Morgens um 10. Oh, da sind ja noch Bitches im Pool.",
 			"Michi ist im Krebs Modus",
